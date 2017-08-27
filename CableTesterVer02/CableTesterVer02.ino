@@ -1,5 +1,5 @@
 //Author: Toby Cotter
-//Description:  Getting 74HC595 to operate
+//Description:  We are using the 74HC595 to enable one 4017 at a time
 //
 //74HC595 Serial Data = Arduino pin #10
 //74HC595 Latch       = Arduino pin #11
