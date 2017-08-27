@@ -21,7 +21,6 @@ int clockPin_4017 = 3;
 
 int resetValue = 255;
 int serialData = 255;
-int firstTime = 1;
 
 void setup() {
   //print comments
