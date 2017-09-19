@@ -8,8 +8,8 @@
 //74HC595 Latch       = Arduino pin #11
 //74HC595 Clock       = Arduino pin #12
 //
-//4017 Reset      All tied together then tied to arduino pin #2
-//4017 Clock      All tied together then tied to arduino pin #3
+//4017 Reset        All tied together then tied to arduino pin #2
+//4017 Clock        All tied together then tied to arduino pin #3
 //4017 CE chip #1   Tied to QA of 74HC595
 //4017 CE chip #2   Tied to QB of 74HC595   
 //
@@ -20,6 +20,7 @@
 
 //*** Variables ***
 int runCount = 0;
+int numOf_165 = 3;
 byte serialIn_from165[8];
 //*** 74HC595 Variables ***
 int serialDataPin_595 = 10;     //serial data pin of the 74hc595 connects to arduino pin 10
@@ -33,7 +34,8 @@ int clockPin_165 = 4;
 int plPin_165 = 5;
 int cePin_165 = 6;
 int serialDataPin_165 = 7;
-
+//troubleshoot
+int trblDelayPin = 8;
 
 
 void setup() {
@@ -44,26 +46,23 @@ void setup() {
 }//End setup
 
 void loop() {
-  if(runCount > 2){
+  if(runCount < 2){
+    Serial.println("Just entered loop");
     //Cable Test #1
-    SendSerialData_595(254);
-    digitalWrite(resetPin_4017, LOW);    
+    SendSerialData_595(254);   //Enables 4017 #1 
+    digitalWrite(resetPin_4017, LOW);  
+      
+    //We do this for each wire
     for(int i=0; i < 5; i++){
       Clock4017();            //Clocks the 4017 once
+      WaitForButtonPress();
       TakeReceiveSnapshot();  //Toggles 74HC165 pl pin to take parallel snapshot
       ReadAll_165();
+      DisplayData_165();
+      delay(500);
+      //Serial.println("Next clock");
     }
     ResetAll4017();
-    
-    //4017 #2
-    SendSerialData_595(253);
-    digitalWrite(resetPin_4017, LOW);
-    for(int i=0; i < 5; i++){
-      //Cable Test #2
-      Clock4017();
-    }
-    ResetAll4017();
-    delay(100);
     runCount++;
   }
 }//End loop
@@ -81,6 +80,8 @@ void SetupPinModes(){
   pinMode(plPin_165, OUTPUT);
   pinMode(cePin_165, OUTPUT);
   pinMode(serialDataPin_165, INPUT);
+  //Troubleshoot
+  pinMode(trblDelayPin, INPUT);
 }//End SetupPinModes
 
 
@@ -90,10 +91,10 @@ void ResetChips(){
   //4017
   ResetAll4017();
   //Reset 74HC165
-  digitalWrite(clockPin_165, HIGH);
+  digitalWrite(clockPin_165, HIGH); 
   digitalWrite(plPin_165, HIGH);
-  digitalWrite(cePin_165, OUTPUT);
-  delay(10);
+  digitalWrite(cePin_165, HIGH);
+  delay(20);
 }//End ResetChips
 
 
@@ -107,21 +108,28 @@ void Clock4017(){
 
 void TakeReceiveSnapshot(){
   digitalWrite(plPin_165, LOW);  
-  delay(50);
+  delay(20);
   digitalWrite(plPin_165, HIGH);
 }//End TakeReceiveSnapshot 
 
 
-void ReadAll_165(){
-  int numOf_165 = 3;
-  digitalWrite(cePin_165, LOW);   //Enable 74HC165
+void ReadAll_165(){  
+  digitalWrite(cePin_165, LOW);       //Enable 74HC165
   
   for(int i=0; i<numOf_165; i++){
-    serialIn_from165[i] = shiftIn(serialDataPin_165, clockPin_165, MSBFIRST);
-    delay(50);
-   //TODO - this is where we left off on Friday morning
+    serialIn_from165[i] = shiftIn(serialDataPin_165, clockPin_165, MSBFIRST);   //This reads one 74HC165
+    delay(10);
   }
-}//ReadAll_165
+  digitalWrite(clockPin_165, HIGH);  //Without this line we were one bit shift off when reading 74HC165 
+}//End ReadAll_165
+
+
+void DisplayData_165(){ 
+  Serial.println("Here comes the 74HC165 data...");
+  for(int i = 0; i<numOf_165; i++){
+    Serial.println(serialIn_from165[i]);
+  }
+}//End DisplayData_165
 
 
 void SendSerialData_595(int val){
@@ -137,3 +145,13 @@ void ResetAll4017(){
   digitalWrite(clockPin_4017, HIGH);
   delay(50);
 }//End ResetAll4017
+
+
+void WaitForButtonPress(){
+  int buttonPress = 1;
+  while(buttonPress == 1){
+    //Serial.println("We entered button press while loop");
+    buttonPress = digitalRead(trblDelayPin);
+    delay(250);
+  }
+}//End WaitForButtonPress
