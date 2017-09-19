@@ -54,7 +54,7 @@ void loop() {
       SendSerialData_595(id_4017[num4017]);       //Enables 1 of 8 4017 via the 74HC595
       digitalWrite(resetPin_4017, LOW);  
         
-      //We do this for each wire to clock on 4017
+      //The following for loop clocks thru 8 outputs of a 4017, takes snapshot, and displays result
       for(int i=0; i < 8; i++){
         Clock4017();                              //Clocks the 4017 once
         WaitForButtonPress();
@@ -64,7 +64,7 @@ void loop() {
         delay(500);
       }//End for
       ResetAll4017();
-      runCount++;
+      runCount++; 
     }//End for
   }//End if
 }//End loop
