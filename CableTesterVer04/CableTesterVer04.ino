@@ -21,7 +21,7 @@
 //*** Variables ***
 int runCount = 0;
 int numOf_165 = 3;
-int id_4017[] = {254, 253, 251, 247, 239, 223, 191, 127};
+int id_4017[] = {254, 253, 251, 247, 239, 223, 191, 127};     //These are the addresses needed to activate one and only one 4017 via the 74HC595
 byte serialIn_from165[8];
 //*** 74HC595 Variables ***
 int serialDataPin_595 = 10;     //serial data pin of the 74hc595 connects to arduino pin 10
@@ -46,22 +46,23 @@ void setup() {
   Serial.println("Started Test");
 }//End setup
 
+
 void loop() {
   if(runCount < 1){
     Serial.println("Just entered loop");
     //Begin Cable Test
-    for(int num4017=0; num4017 < 2; num4017++){   //TODO The 2 needs to be changed to 8    
+    for(int num4017=0; num4017 < numOf_165; num4017++){   //This loops for the number of 165's we have (should be 8)
       SendSerialData_595(id_4017[num4017]);       //Enables 1 of 8 4017 via the 74HC595
       digitalWrite(resetPin_4017, LOW);  
         
       //The following for loop clocks thru 8 outputs of a 4017, takes snapshot, and displays result
       for(int i=0; i < 8; i++){
         Clock4017();                              //Clocks the 4017 once
-        WaitForButtonPress();
+        //WaitForButtonPress();
         TakeReceiveSnapshot();                    //Toggles 74HC165 pl pin to take parallel snapshot
         ReadAll_165();
         DisplayData_165();
-        delay(500);
+        //delay(500); //TODO change delay time to 50
       }//End for
       ResetAll4017();
       runCount++; 
